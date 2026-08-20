@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Image Classifier</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+
+            background: rgba(255, 255, 255, 0.08);
+
+            backdrop-filter: blur(15px);
+
+            border-radius: 25px;
+
+            padding: 40px;
+
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .upload-box {
+            border: 2px dashed #64748b;
+            border-radius: 20px;
+            padding: 45px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .upload-box:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .choose-btn {
+            display: inline-block;
+            background: #2563eb;
+            padding: 13px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .choose-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #94a3b8;
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #16a34a;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .predict-btn:hover {
+            background: #15803d;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #38bdf8;
+            margin-bottom: 20px;
+        }
+
+        .prediction {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .image-preview {
+            margin-top: 25px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 15px;
+            object-fit: contain;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            color: #fca5a5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #38bdf8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>🤖 AI Image Classifier</h1>
+
+        <p>
+            Upload an image and let AI identify the main subject
+        </p>
+
+    </div>
+
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        id="uploadForm"
+    >
+
+        <div class="upload-box">
+
+            <div class="upload-icon">
+                📸
+            </div>
+
+            <h3>
+                Select an Image
+            </h3>
+
+            <p style="margin-top: 8px; color: #94a3b8;">
+                JPG, JPEG, PNG or WEBP
+            </p>
+
+            <label
+                for="image"
+                class="choose-btn"
+            >
+                Choose Image
+            </label>
+
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                required
+            >
+
+            <div
+                class="file-name"
+                id="fileName"
+            >
+                No image selected
+            </div>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="predict-btn"
+            id="predictBtn"
+        >
+            🚀 Classify Image
+        </button>
+
+
+        <div
+            class="loading"
+            id="loading"
+        >
+            ⏳ AI is analyzing your image...
+        </div>
+
+    </form>
+
+
+    {% if error %}
+
+    <div class="error">
+        ⚠️ {{ error }}
+    </div>
+
+    {% endif %}
+
+
+    {% if prediction %}
+
+    <div class="result">
+
+        <h2>
+            🔍 Prediction Result
+        </h2>
+
+        <div class="prediction">
+            {{ prediction }}
+        </div>
+
+
+        {% if image_path %}
+
+        <div class="image-preview">
+
+            <img
+                src="{{ image_path }}"
+                alt="Uploaded Image"
+            >
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="footer">
+
+        Powered by SmolVLM • Hugging Face • Flask
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const imageInput =
+        document.getElementById("image");
+
+    const fileName =
+        document.getElementById("fileName");
+
+    const uploadForm =
+        document.getElementById("uploadForm");
+
+    const predictBtn =
+        document.getElementById("predictBtn");
+
+    const loading =
+        document.getElementById("loading");
+
+
+    imageInput.addEventListener(
+        "change",
+        function () {
+
+            if (this.files.length > 0) {
+
+                fileName.textContent =
+                    this.files[0].name;
+
+            } else {
+
+                fileName.textContent =
+                    "No image selected";
+
+            }
+
+        }
+    );
+
+
+    uploadForm.addEventListener(
+        "submit",
+        function () {
+
+            predictBtn.disabled = true;
+
+            predictBtn.textContent =
+                "⏳ Processing...";
+
+            loading.style.display =
+                "block";
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
